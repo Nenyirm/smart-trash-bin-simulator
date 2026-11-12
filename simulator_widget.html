@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  body { background: #F1F5F9; color: #0F172A; padding: 10px; }
+  
+  /* Outer Container - Tema Terang, Bersih, & Kontras Tinggi */
+  .sim-container {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    max-width: 1050px;
+    margin: 0 auto;
+    background: #FFFFFF;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 0 0 1px #E2E8F0;
+    border: 1.5px solid #CBD5E1;
+  }
+  .machine-col { flex: 1.35; display: flex; flex-direction: column; align-items: center; }
+  .control-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  
+  /* SVG Blueprint / Engineering Canvas */
+  svg {
+    width: 100%;
+    height: auto;
+    max-height: 480px;
+    background: #F8FAFC;
+    border-radius: 10px;
+    border: 2px solid #94A3B8;
+  }
+  
+  /* Animasi Grinder */
+  .blade-left { transform-origin: 190px 105px; }
+  .blade-right { transform-origin: 290px 105px; }
+  .spinning-left { animation: spinCW 0.6s linear infinite; }
+  .spinning-right { animation: spinCCW 0.6s linear infinite; }
+  @keyframes spinCW { 100% { transform: rotate(360deg); } }
+  @keyframes spinCCW { 100% { transform: rotate(-360deg); } }
+  
+  /* Animasi Daun Gugur */
+  .leaf { opacity: 0; }
+  .leaf-falling { animation: leafDrop 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
+  @keyframes leafDrop {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    50% { transform: translateY(65px) scale(0.9); opacity: 1; }
+    75% { transform: translateY(105px) scale(0.5); opacity: 0.85; }
+    100% { transform: translateY(170px) scale(0.2); opacity: 0; }
+  }
+  
+  /* Animasi Pemanas Nichrome */
+  .heater-coil { transition: all 0.4s ease; stroke: #64748B; }
+  .heater-active-low { stroke: #D97706; filter: drop-shadow(0 0 6px #F59E0B); }
+  .heater-active-high { stroke: #DC2626; filter: drop-shadow(0 0 10px #EF4444); animation: heatPulse 0.9s ease-in-out infinite alternate; }
+  @keyframes heatPulse {
+    0% { opacity: 0.85; }
+    100% { opacity: 1; stroke: #EF4444; filter: drop-shadow(0 0 14px #DC2626); }
+  }
+
+  /* Animasi Pengaduk Mekanis */
+  .agitator-assembly { transition: transform 0.1s linear; }
+  .agitating { animation: agitateMove 2.2s ease-in-out infinite alternate; }
+  @keyframes agitateMove {
+    0% { transform: translateX(0px); }
+    50% { transform: translateX(50px); }
+    100% { transform: translateX(0px); }
+  }
+
+  /* Animasi Pintu Solenoid */
+  .door-leaf { transition: transform 0.6s ease; transform-origin: 120px 420px; }
+  .door-open { transform: rotate(40deg); }
+  .solenoid-pin { transition: transform 0.4s ease; }
+  .solenoid-unlocked { transform: translateX(18px); }
+
+  /* UI Cards Kanan */
+  .card {
+    background: #F8FAFC;
+    border-radius: 9px;
+    padding: 10px 13px;
+    border: 1.5px solid #E2E8F0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .card-title {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #1E293B;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 4px;
+  }
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #334155;
+    font-weight: 500;
+  }
+  
+  /* Status Badges */
+  .badge {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .badge-off { background: #E2E8F0; color: #475569; border: 1px solid #CBD5E1; }
+  .badge-warn { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+  .badge-danger { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+  .badge-ok { background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; }
+
+  /* Tombol Demo Utama */
+  .btn-demo {
+    background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    color: #FFFFFF;
+    border: none;
+    padding: 12px 14px;
+    border-radius: 9px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14.5px;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+  .btn-demo:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+  }
+  .btn-demo:active { transform: translateY(1px); }
+  
+  /* Tombol Kontrol Manual */
+  .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .btn-sub {
+    background: #FFFFFF;
+    color: #1E293B;
+    border: 1.5px solid #CBD5E1;
+    padding: 8px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .btn-sub:hover { background: #F1F5F9; border-color: #94A3B8; }
+  .btn-sub:active { transform: translateY(1px); }
+  .btn-danger {
+    background: #DC2626;
+    color: #FFFFFF;
+    border: 1.5px solid #B91C1C;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+  }
+  .btn-danger:hover { background: #B91C1C; border-color: #991B1B; color: #FFFFFF; }
+
+  /* Kotak Edukasi / Narasi Cara Kerja */
+  .narasi-box {
+    background: #EFF6FF;
+    border: 1.5px solid #93C5FD;
+    border-radius: 9px;
+    padding: 11px 13px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #1E3A8A;
+  }
+</style>
+</head>
+<body>
+
+<div class="sim-container">
+  <!-- SISI KIRI: MESIN ANIMASI REAL-TIME -->
+  <div class="machine-col">
+    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px;">
+      <span style="font-weight: 800; font-size: 13.5px; color: #0F172A;">🔬 Simulasi Visual Gerak Mesin (Cross-Section)</span>
+      <span id="txt-fase" style="font-size: 11px; font-weight: 700; color: #1D4ED8; background: #DBEAFE; border: 1px solid #BFDBFE; padding: 3px 8px; border-radius: 5px;">Fase: Siaga</span>
+    </div>
+
+    <svg viewBox="0 0 480 490">
+      <defs>
+        <!-- Grid garis bantu teknis warna abu-abu muda -->
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="0" x2="20" y2="0" stroke="#E2E8F0" stroke-width="0.8"/>
+          <line x1="0" y1="0" x2="0" y2="20" stroke="#E2E8F0" stroke-width="0.8"/>
+        </pattern>
+        <linearGradient id="compostGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#92400E"/>
+          <stop offset="100%" stop-color="#451A03"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Background Grid -->
+      <rect width="480" height="490" fill="#F8FAFC" />
+      <rect width="480" height="490" fill="url(#grid)" />
+
+      <!-- CASING MESIN UTAMA (Batas Luar Jelas & Tegas) -->
+      <rect x="70" y="15" width="340" height="455" rx="14" fill="#FFFFFF" stroke="#1E293B" stroke-width="2.5" />
+      <rect x="80" y="25" width="320" height="435" rx="10" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2" />
+
+      <!-- CORONG INPUT DAUN ATAS -->
+      <polygon points="170,25 310,25 260,65 220,65" fill="#E2E8F0" stroke="#1E293B" stroke-width="2" />
+      <rect x="150" y="8" width="180" height="15" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+      <text x="240" y="19" fill="#0F172A" font-size="9.5" font-weight="700" text-anchor="middle">Corong Masukan (Celah ±2 cm)</text>
+
+      <!-- DAUN-DAUN JATUH DARI ATAS -->
+      <g id="leaf-particles">
+        <ellipse class="leaf" cx="240" cy="35" rx="8" ry="3.5" fill="#D97706" stroke="#92400E" stroke-width="0.8"/>
+        <ellipse class="leaf" cx="230" cy="40" rx="7" ry="3" fill="#B45309" stroke="#78350F" stroke-width="0.8"/>
+        <ellipse class="leaf" cx="250" cy="38" rx="7.5" ry="3.5" fill="#EA580C" stroke="#9A3412" stroke-width="0.8"/>
+      </g>
+
+      <!-- KOMPARTEMEN 1: DUAL GRINDER PISAU BERPUTAR -->
+      <rect x="100" y="65" width="280" height="75" rx="8" fill="#F1F5F9" stroke="#334155" stroke-width="1.8" />
+      <text x="115" y="81" fill="#0F172A" font-size="10" font-weight="800" letter-spacing="0.3">1. PISAU GRINDER (DUAL BLADE)</text>
+
+      <!-- PISAU KIRI -->
+      <g id="bladeLeft" class="blade-left">
+        <circle cx="190" cy="105" r="28" fill="#E2E8F0" stroke="#1E293B" stroke-width="2.5"/>
+        <line x1="162" y1="105" x2="218" y2="105" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
+        <line x1="190" y1="77" x2="190" y2="133" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
+        <line x1="170" y1="85" x2="210" y2="125" stroke="#334155" stroke-width="2"/>
+        <line x1="170" y1="125" x2="210" y2="85" stroke="#334155" stroke-width="2"/>
+        <circle cx="190" cy="105" r="7" fill="#0F172A" stroke="#FFFFFF" stroke-width="1.8"/>
+      </g>
+      
+      <!-- PISAU KANAN -->
+      <g id="bladeRight" class="blade-right">
+        <circle cx="290" cy="105" r="28" fill="#E2E8F0" stroke="#1E293B" stroke-width="2.5"/>
+        <line x1="262" y1="105" x2="318" y2="105" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
+        <line x1="290" y1="77" x2="290" y2="133" stroke="#1E293B" stroke-width="3" stroke-linecap="round"/>
+        <line x1="270" y1="85" x2="310" y2="125" stroke="#334155" stroke-width="2"/>
+        <line x1="270" y1="125" x2="310" y2="85" stroke="#334155" stroke-width="2"/>
+        <circle cx="290" cy="105" r="7" fill="#0F172A" stroke="#FFFFFF" stroke-width="1.8"/>
+      </g>
+
+      <!-- SERPIHAN DAUN HASIL CACAHAN -->
+      <g id="chopped-particles" style="display:none;">
+        <circle cx="235" cy="150" r="2.5" fill="#92400E"/>
+        <circle cx="245" cy="153" r="3" fill="#B45309"/>
+        <circle cx="225" cy="157" r="2" fill="#D97706"/>
+        <circle cx="255" cy="155" r="2.5" fill="#78350F"/>
+        <circle cx="238" cy="162" r="2" fill="#B45309"/>
+      </g>
+
+      <!-- SEKAT PEMISAH -->
+      <line x1="90" y1="145" x2="390" y2="145" stroke="#64748B" stroke-width="2" stroke-dasharray="5,5"/>
+
+      <!-- KOMPARTEMEN 2: RUANG PENGOMPOSAN (TERKONTROL AI) -->
+      <rect x="100" y="155" width="280" height="245" rx="8" fill="#FFFBEB" stroke="#D97706" stroke-width="1.8" />
+      <text x="115" y="173" fill="#92400E" font-size="10" font-weight="800" letter-spacing="0.3">2. RUANG PENGOMPOSAN (TERKONTROL AI)</text>
+
+      <!-- PEMANAS NICHROME (KIRI & KANAN) - Garis Tebal & Jelas Terlihat -->
+      <!-- Kiri -->
+      <path id="heaterLeft" class="heater-coil" d="M 112 205 L 122 215 L 112 225 L 122 235 L 112 245 L 122 255 L 112 265 L 122 275 L 112 285" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="106" y="188" width="56" height="14" rx="3" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+      <text x="134" y="198" fill="#0F172A" font-size="9" font-weight="700" text-anchor="middle">Pemanas L</text>
+
+      <!-- Kanan -->
+      <path id="heaterRight" class="heater-coil" d="M 368 205 L 358 215 L 368 225 L 358 235 L 368 245 L 358 255 L 368 265 L 358 275 L 368 285" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="318" y="188" width="56" height="14" rx="3" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+      <text x="346" y="198" fill="#0F172A" font-size="9" font-weight="700" text-anchor="middle">Pemanas R</text>
+
+      <!-- TUMPUKAN KOMPOS DI RUANG BAWAH -->
+      <path id="compostBed" d="M 115 385 Q 240 330 365 385 L 365 385 L 115 385 Z" fill="url(#compostGrad)" stroke="#451A03" stroke-width="1.5" opacity="0.95" />
+
+      <!-- PENGADUK MEKANIS (AGITATOR) BOLAK-BALIK -->
+      <g id="agitatorGroup" class="agitator-assembly">
+        <!-- Batang Utama Logam Kuat -->
+        <rect x="135" y="340" width="160" height="7" rx="3.5" fill="#334155" stroke="#0F172A" stroke-width="1.2"/>
+        <!-- Bilah Pengaduk Vertikal -->
+        <rect x="145" y="325" width="6" height="35" rx="2" fill="#475569" stroke="#1E293B" stroke-width="1"/>
+        <rect x="180" y="325" width="6" height="35" rx="2" fill="#475569" stroke="#1E293B" stroke-width="1"/>
+        <rect x="215" y="325" width="6" height="35" rx="2" fill="#475569" stroke="#1E293B" stroke-width="1"/>
+        <rect x="250" y="325" width="6" height="35" rx="2" fill="#475569" stroke="#1E293B" stroke-width="1"/>
+        <rect x="280" y="325" width="6" height="35" rx="2" fill="#475569" stroke="#1E293B" stroke-width="1"/>
+        <!-- Panah Petunjuk Gerak Bolak-Balik -->
+        <line x1="160" y1="312" x2="270" y2="312" stroke="#0284C7" stroke-width="2" stroke-dasharray="4,3"/>
+        <polygon points="156,312 165,308 165,316" fill="#0284C7"/>
+        <polygon points="274,312 265,308 265,316" fill="#0284C7"/>
+      </g>
+      <rect x="140" y="293" width="200" height="15" rx="4" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1"/>
+      <text x="240" y="304" fill="#0369A1" font-size="9.5" font-weight="800" text-anchor="middle">Pengaduk Bolak-Balik (Aerasi O₂)</text>
+
+      <!-- SENSOR PROBE DI DALAM RUANG -->
+      <line x1="200" y1="195" x2="200" y2="335" stroke="#059669" stroke-width="2.5" />
+      <circle cx="200" cy="335" r="4.5" fill="#059669" stroke="#FFFFFF" stroke-width="1.5"/>
+      <rect x="172" y="184" width="56" height="17" rx="4" fill="#059669" stroke="#047857" stroke-width="1"/>
+      <text x="200" y="196" fill="#FFFFFF" font-size="9" font-weight="800" text-anchor="middle">Suhu/RH</text>
+
+      <!-- SENSOR GAS MQ-135 -->
+      <circle cx="290" cy="220" r="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+      <text x="290" y="223.5" fill="#92400E" font-size="8" font-weight="800" text-anchor="middle">GAS</text>
+
+      <!-- KOMPARTEMEN 3: PINTU PENGAMBILAN KOMPOS & SOLENOID -->
+      <rect x="100" y="405" width="280" height="34" rx="5" fill="#F1F5F9" stroke="#475569" stroke-width="1.8" />
+      
+      <!-- DAUN PINTU (MEMBUKA OTOMATIS) -->
+      <rect id="doorLeaf" class="door-leaf" x="110" y="411" width="215" height="22" rx="4" fill="#E2E8F0" stroke="#334155" stroke-width="1.8"/>
+      <text x="215" y="426" fill="#0F172A" font-size="9.5" font-weight="700" text-anchor="middle">Pintu Pengeluaran Kompos (Interlock)</text>
+
+      <!-- SOLENOID INTERLOCK KANAN -->
+      <rect x="335" y="410" width="35" height="24" rx="4" fill="#334155" stroke="#1E293B" stroke-width="1.5"/>
+      <rect id="solenoidPin" class="solenoid-pin" x="320" y="418" width="18" height="8" rx="2" fill="#DC2626" stroke="#FFFFFF" stroke-width="1"/>
+      <circle id="solenoidLed" cx="352" cy="422" r="3.5" fill="#DC2626"/>
+
+      <!-- BANTALAN ALAS PENAMPUNG AIR LINDI (BOTTOM) -->
+      <rect x="75" y="445" width="330" height="19" rx="4" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+      <text x="240" y="458" fill="#92400E" font-size="9" font-weight="700" text-anchor="middle">Bantalan Alas Penampung Air Lindi & Cairan Sisa</text>
+    </svg>
+  </div>
+
+  <!-- SISI KANAN: COCKPIT PENGENDALI & METRIK REAL-TIME -->
+  <div class="control-col">
+    <!-- TOMBOL SIMULASI UTAMA (PUTAR DEMO KLIK DI SINI) -->
+    <button id="btnPlayDemo" class="btn-demo" onclick="jalankanDemoOtomatis()">
+      <span style="font-size: 16px;">▶️</span>
+      <span>Putar Demo (Klik di Sini)</span>
+    </button>
+
+    <!-- STATUS REAL-TIME MESIN -->
+    <div class="card">
+      <div class="card-title">⚡ Status Aktuator Fisik Mesin</div>
+      <div class="status-row">
+        <span>Motor Grinder:</span>
+        <span id="badge-grinder" class="badge badge-off">SIAGA (0 RPM)</span>
+      </div>
+      <div class="status-row">
+        <span>Pemanas Nichrome:</span>
+        <span id="badge-heater" class="badge badge-off">MATI (0%)</span>
+      </div>
+      <div class="status-row">
+        <span>Motor Pengaduk:</span>
+        <span id="badge-stirrer" class="badge badge-off">DIAM (0 mnt)</span>
+      </div>
+      <div class="status-row">
+        <span>Pintu Solenoid:</span>
+        <span id="badge-lock" class="badge badge-danger">🔒 TERKUNCI (Aman)</span>
+      </div>
+    </div>
+
+    <!-- SENSOR REAL-TIME -->
+    <div class="card">
+      <div class="card-title">📊 Pembacaan Sensor Lingkungan</div>
+      <div class="status-row">
+        <span>Suhu Ruang:</span>
+        <strong id="val-suhu" style="color: #B45309; font-size: 14px;">28.0 °C</strong>
+      </div>
+      <div class="status-row">
+        <span>Kelembapan Kompos:</span>
+        <strong id="val-hum" style="color: #0284C7; font-size: 14px;">55 %</strong>
+      </div>
+      <div class="status-row">
+        <span>Indeks Gas (MQ-135):</span>
+        <strong id="val-gas" style="color: #15803D; font-size: 14px;">20 (Normal)</strong>
+      </div>
+    </div>
+
+    <!-- KONTROL MANUAL CEPAT -->
+    <div class="card">
+      <div class="card-title">🎛️ Kendali Praktik Manual</div>
+      <div class="btn-group">
+        <button class="btn-sub" onclick="aksiCacahDaun()">🍂 Masukkan Daun</button>
+        <button class="btn-sub" onclick="aksiTogglePemanas()">🔥 Toggle Pemanas</button>
+        <button class="btn-sub" onclick="aksiTogglePengaduk()">🔄 Toggle Pengaduk</button>
+        <button class="btn-sub btn-danger" onclick="aksiStopDarurat()">🚨 STOP DARURAT</button>
+      </div>
+    </div>
+
+    <!-- KOTAK NARASI EDUKATIF -->
+    <div class="narasi-box" id="box-narasi">
+      <strong style="color: #1D4ED8;">💡 Cara Kerja Sistem:</strong><br>
+      Klik tombol hijau <strong>"Putar Demo (Klik di Sini)"</strong> di atas untuk melihat proses daun dicacah pisau grinder berputar, jatuh ke ruang pengomposan, dipanaskan kawat nichrome, dan diaduk bolak-balik secara nyata!
+    </div>
+  </div>
+</div>
+
+<script>
+let state = {
+  grinding: false,
+  heating: 0,
+  stirring: false,
+  doorUnlocked: false,
+  emergency: false,
+  suhu: 28,
+  hum: 55,
+  gas: 20
+};
+
+let demoTimer = null;
+
+function setFase(txt) {
+  document.getElementById("txt-fase").innerText = "Fase: " + txt;
+}
+
+function setNarasi(txt) {
+  document.getElementById("box-narasi").innerHTML = txt;
+}
+
+function updateVisuals() {
+  const bLeft = document.getElementById("bladeLeft");
+  const bRight = document.getElementById("bladeRight");
+  const leaves = document.querySelectorAll(".leaf");
+  const chopped = document.getElementById("chopped-particles");
+  const badgeGrinder = document.getElementById("badge-grinder");
+
+  if (state.emergency) {
+    bLeft.className.baseVal = "blade-left";
+    bRight.className.baseVal = "blade-right";
+    leaves.forEach(l => l.classList.remove("leaf-falling"));
+    chopped.style.display = "none";
+    badgeGrinder.innerText = "🛑 STOP (Darurat)";
+    badgeGrinder.className = "badge badge-danger";
+  } else if (state.grinding) {
+    bLeft.className.baseVal = "blade-left spinning-left";
+    bRight.className.baseVal = "blade-right spinning-right";
+    leaves.forEach(l => l.classList.add("leaf-falling"));
+    chopped.style.display = "block";
+    badgeGrinder.innerText = "⚙️ BERPUTAR (350 RPM)";
+    badgeGrinder.className = "badge badge-ok";
+  } else {
+    bLeft.className.baseVal = "blade-left";
+    bRight.className.baseVal = "blade-right";
+    leaves.forEach(l => l.classList.remove("leaf-falling"));
+    chopped.style.display = "none";
+    badgeGrinder.innerText = "SIAGA (0 RPM)";
+    badgeGrinder.className = "badge badge-off";
+  }
+
+  const hL = document.getElementById("heaterLeft");
+  const hR = document.getElementById("heaterRight");
+  const badgeHeat = document.getElementById("badge-heater");
+
+  if (state.emergency || state.heating === 0) {
+    hL.className.baseVal = "heater-coil";
+    hR.className.baseVal = "heater-coil";
+    badgeHeat.innerText = "MATI (0%)";
+    badgeHeat.className = "badge badge-off";
+  } else if (state.heating === 1) {
+    hL.className.baseVal = "heater-coil heater-active-low";
+    hR.className.baseVal = "heater-coil heater-active-low";
+    badgeHeat.innerText = "HANGAT (45%)";
+    badgeHeat.className = "badge badge-warn";
+  } else {
+    hL.className.baseVal = "heater-coil heater-active-high";
+    hR.className.baseVal = "heater-coil heater-active-high";
+    badgeHeat.innerText = "PANAS MAKS (85%)";
+    badgeHeat.className = "badge badge-danger";
+  }
+
+  const agitator = document.getElementById("agitatorGroup");
+  const badgeStir = document.getElementById("badge-stirrer");
+
+  if (state.emergency || !state.stirring) {
+    agitator.classList.remove("agitating");
+    badgeStir.innerText = "DIAM (0 mnt)";
+    badgeStir.className = "badge badge-off";
+  } else {
+    agitator.classList.add("agitating");
+    badgeStir.innerText = "🔄 MENGADUK (18 mnt/siklus)";
+    badgeStir.className = "badge badge-ok";
+  }
+
+  const door = document.getElementById("doorLeaf");
+  const pin = document.getElementById("solenoidPin");
+  const led = document.getElementById("solenoidLed");
+  const badgeLock = document.getElementById("badge-lock");
+
+  if (state.doorUnlocked && !state.emergency) {
+    door.classList.add("door-open");
+    pin.classList.add("solenoid-unlocked");
+    pin.setAttribute("fill", "#16A34A");
+    led.setAttribute("fill", "#16A34A");
+    badgeLock.innerText = "🔓 TERBUKA (Kompos Siap)";
+    badgeLock.className = "badge badge-ok";
+  } else {
+    door.classList.remove("door-open");
+    pin.classList.remove("solenoid-unlocked");
+    pin.setAttribute("fill", "#DC2626");
+    led.setAttribute("fill", "#DC2626");
+    badgeLock.innerText = "🔒 TERKUNCI (Aman)";
+    badgeLock.className = "badge badge-danger";
+  }
+
+  document.getElementById("val-suhu").innerText = state.suhu.toFixed(1) + " °C";
+  document.getElementById("val-hum").innerText = state.hum + " %";
+  document.getElementById("val-gas").innerText = state.gas + (state.gas > 60 ? " (Tinggi!)" : " (Normal)");
+}
+
+function aksiCacahDaun() {
+  if (state.emergency) return;
+  state.grinding = true;
+  setFase("Mencacah Daun Kering");
+  setNarasi("<strong style='color:#1D4ED8;'>⚙️ Grinder Aktif:</strong> Dua pisau berputar berlawanan arah menarik daun kering dari corong dan mencacahnya menjadi partikel kecil agar luas permukaan kontak mikroba meningkat pesat!");
+  updateVisuals();
+  setTimeout(() => {
+    state.grinding = false;
+    setFase("Daun Masuk Ruang Kompos");
+    setNarasi("<strong style='color:#15803D;'>✅ Pencacahan Selesai:</strong> Serpihan daun jatuh ke ruang pengomposan. Sensor suhu membaca kondisi dingin (26 °C). Menunggu keputusan AI...");
+    state.suhu = 26;
+    updateVisuals();
+  }, 4000);
+}
+
+function aksiTogglePemanas() {
+  if (state.emergency) return;
+  state.heating = (state.heating + 1) % 3;
+  if (state.heating === 2) state.suhu = 52;
+  else if (state.heating === 1) state.suhu = 42;
+  else state.suhu = 28;
+  updateVisuals();
+}
+
+function aksiTogglePengaduk() {
+  if (state.emergency) return;
+  state.stirring = !state.stirring;
+  updateVisuals();
+}
+
+function aksiStopDarurat() {
+  state.emergency = !state.emergency;
+  if (state.emergency) {
+    if (demoTimer) clearTimeout(demoTimer);
+    state.grinding = false;
+    state.heating = 0;
+    state.stirring = false;
+    state.doorUnlocked = false;
+    setFase("STOP DARURAT");
+    setNarasi("<strong style='color:#DC2626;'>🚨 E-STOP AKTIF:</strong> Tombol darurat ditekan! Relai memutuskan seluruh aliran daya ke motor dan pemanas demi keselamatan.");
+  } else {
+    setFase("Siaga Normal");
+    setNarasi("<strong style='color:#15803D;'>✅ Sistem Normal Kembali:</strong> Sistem siap beroperasi.");
+  }
+  updateVisuals();
+}
+
+function jalankanDemoOtomatis() {
+  if (state.emergency) aksiStopDarurat();
+  const btn = document.getElementById("btnPlayDemo");
+  btn.disabled = true;
+  btn.style.opacity = "0.7";
+
+  setFase("1/4 Daun Masuk & Grinder");
+  setNarasi("<strong style='color:#1D4ED8;'>[TAHAP 1/4 - Grinder Berputar]:</strong> Daun kering dimasukkan ke corong masukan. Dua pisau baja berputar berlawanan arah mencacah daun menjadi serpihan halus!");
+  state.grinding = true;
+  state.heating = 0;
+  state.stirring = false;
+  state.doorUnlocked = false;
+  state.suhu = 25;
+  state.hum = 35;
+  state.gas = 15;
+  updateVisuals();
+
+  demoTimer = setTimeout(() => {
+    state.grinding = false;
+    state.heating = 2;
+    setFase("2/4 AI Menyalakan Pemanas");
+    setNarasi("<strong style='color:#B45309;'>[TAHAP 2/4 - Logika AI Pemanasan]:</strong> Sensor membaca suhu 25 °C (DINGIN). AI Fuzzy Mamdani memutuskan <em>Daya Pemanas = 85%</em>. Kawat pemanas Nichrome di dinding menyala merah membara untuk menaikkan suhu ke kisaran termofilik (50-60 °C)!");
+    state.suhu = 52;
+    updateVisuals();
+
+    demoTimer = setTimeout(() => {
+      state.heating = 1;
+      state.stirring = true;
+      state.hum = 60;
+      state.gas = 68;
+      setFase("3/4 Pengadukan & Aerasi");
+      setNarasi("<strong style='color:#0369A1;'>[TAHAP 3/4 - Pengadukan & Aerasi AI]:</strong> Gas pembusukan terdeteksi naik (68). Aturan Fuzzy menggerakkan motor pengaduk bolak-balik selama 18 menit/siklus untuk memberi sirkulasi oksigen segar dan membuang gas anaerob!");
+      updateVisuals();
+
+      demoTimer = setTimeout(() => {
+        state.heating = 0;
+        state.stirring = false;
+        state.doorUnlocked = true;
+        state.suhu = 32;
+        state.gas = 12;
+        setFase("4/4 Kompos Matang!");
+        setNarasi("<strong style='color:#15803D;'>[TAHAP 4/4 - Panen Kompos Selesai]:</strong> Dekomposisi selesai sempurna. Solenoid interlock membuka kunci hijau secara otomatis. Pintu terbuka dan kompos matang siap dipanen!");
+        updateVisuals();
+
+        btn.disabled = false;
+        btn.style.opacity = "1";
+      }, 7000);
+    }, 6000);
+  }, 4500);
+}
+
+updateVisuals();
+</script>
+</body>
+</html>
